@@ -45,7 +45,7 @@ ABOUT_ME = "Plasma physicist. Munich, Germany."
 #AVATAR = 'images/avatar.png'
 
 # PLUGINS
-PLUGINS = []
+PLUGINS = ["render_math"]
 
 # Do not work = 'liquid_tags.notebook',
 
@@ -56,7 +56,7 @@ FEED_ALL_ATOM = None
 # Social widget
 LINKS = None
 SOCIAL = (('Twitter', 'https://twitter.com/destop'))
-
+GOOGLE_ANALYTICS="UA-75277621-1"
 
 # ARTICLE INFO
 DISPLAY_ARTICLE_INFO_ON_INDEX = True

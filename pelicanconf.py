@@ -55,7 +55,8 @@ FEED_ALL_ATOM = None
 
 # Social widget
 LINKS = None
-SOCIAL = (('Twitter', 'https://twitter.com/destop'))
+SOCIAL = (('Twitter', 'https://twitter.com/destop'),
+          ('Github', 'https://github.com/albanatita'),)
 GOOGLE_ANALYTICS="UA-75277621-1"
 
 # ARTICLE INFO

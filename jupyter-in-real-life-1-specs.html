@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
+<head>
+    <title>Jupyter in real life 1: specs - The Far Star</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="./jupyter-in-real-life-1-specs.html">
+
+        <meta name="author" content="rdi" />
+        <meta name="description" content="Why I chose to develop a jupyter-base data processing system for our plasma testbed." />
+
+        <meta property="og:site_name" content="The Far Star" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="Jupyter in real life 1: specs"/>
+        <meta property="og:url" content="./jupyter-in-real-life-1-specs.html"/>
+        <meta property="og:description" content="Why I chose to develop a jupyter-base data processing system for our plasma testbed."/>
+        <meta property="article:published_time" content="2016-05-29" />
+            <meta property="article:section" content="coding, research, python, jupyter" />
+            <meta property="article:author" content="rdi" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="./theme/css/bootstrap.flatly.min.css" type="text/css"/>
+    <link href="./theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="./theme/css/pygments/native.css" rel="stylesheet">
+        <link href="./theme/css/typogrify.css" rel="stylesheet">
+    <link rel="stylesheet" href="./theme/css/style.css" type="text/css"/>
+
+
+
+
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="./" class="navbar-brand">
+The Far Star            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                         <li><a href="./pages/about.html">
+                             About
+                          </a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="./archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="./jupyter-in-real-life-1-specs.html"
+                       rel="bookmark"
+                       title="Permalink to Jupyter in real life 1: specs">
+                        Jupyter in real life 1:&nbsp;specs
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2016-05-29T19:00:00+02:00"> So 29 Mai 2016</time>
+    </span>
+
+
+            <span class="label label-default">By</span>
+            <a href="./author/rdi.html"><i class="fa fa-user"></i> rdi</a>
+
+        <span class="label label-default">Category</span>
+        <a href="./category/coding-research-python-jupyter.html">coding, research, python, jupyter</a>
+
+
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p><a href="http://jupyter.org">Jupyter</a> is the reference in terms of notebooks. Its principle of <a href="http://blog.jupyter.org/2015/07/07/project-jupyter-computational-narratives-as-the-engine-of-collaborative-data-science/">narrative computing</a> offers many advantages, but the most common application is related to education (see for instance this <a href="http://nb.bianp.net/sort/views/">list of notebooks</a> which are mainly tutorials). The ability to follow step by step a calculation, and to do it by ourself, is of course already a big help to understand a subject. Yet, I am convinced that the notebook, and the evolution that it is presently following, can also play an active role in research and production. I want to share in a series of posts, the application I have done it on a concrete example in my lab and testbed, with the hope that it can convince other people to use it or to share their own experience with it in the area of&nbsp;research. </p>
+<p>In this first post, I will explain why I have chosen Jupyter over more classical methods for data sharing and&nbsp;processing.</p>
+<h2>The need for a data&nbsp;platform</h2>
+<p>I run a <a href="http://www.ipp.mpg.de/3818534/ishtar">middle-sized experiment</a> worth of several hundreds of thousands of euros which aims at producing a helicon plasma and at analyzing its interactions with radio-frequency&nbsp;waves. </p>
+<p><img alt="Ishtar Testbed" src="./images/ishtar_plasma.jpg" /></p>
+<p>Despite its limited size, the experiment involves several teams distributed over several countries in Europe and plans to extend to cooperations on other continents. The idea is to have shared experimental platform accessible for whoever wants to carry out measurements on this kind of plasma source, with a friendly plug&amp;play interface for diagnostics and easy access to the data. In brief, this should be a XXIst century way to do &#8220;cloud experimenting&#8221; within a modest&nbsp;budget.</p>
+<h2>Distribute data, but in a meaningful&nbsp;way</h2>
+<p>My main concern was to make the data available to the distributed team. My first idea was rather classical with the development of a data server: basically, the data are stored on a computer with, for instance, a http server and each user can connect either through a web browser or through a dedicated client to this server to display the list of experiments and the associated data and download them. Since I wanted to use Python anyway (because it is, in my opinion, the best suited language for this kind swiss-knife operations of data and metadata manipulations), I was thinking of implementing a tornado server like the <a href="https://www.hdfgroup.org/projects/hdfserver/"><span class="caps">HDF</span> server</a>. </p>
+<h2>Not the obvious&nbsp;choice</h2>
+<p>Yet I was not convinced by this choice for several&nbsp;reasons:</p>
+<ul>
+<li>
+<p>Each experiment contains several <span class="caps">GB</span> of data and we can have up to 100 experiments each day. Not all data are relevant but we are still at a stage where we don&#8217;t know exactly how to clean them. This means that people will tend to download a huge amount of data, just to process a small part of&nbsp;them,</p>
+</li>
+<li>
+<p>if a dedicated client is used, it is faster than a web browser but we would have to update it with each evolution of the database and to be sure that each client computer has the right versions for python and the different modules. In a collaboration, where people come and leave often, it could become very time&nbsp;consuming,</p>
+</li>
+<li>
+<p>The fact that the team is physically distributed means that everybody will work out the data his own way, with his own tools and his own models. So, in addition to sharing the data, we would have to develop and install tools to share the models, to improve the communications. This is what is done in motst collaborations, but it is probably not optimized and there is room for&nbsp;enhancement, </p>
+</li>
+<li>
+<p>I am very convinced that notebooks are the future of doing data processing and computing. Its brings a huge improvement in human/computer interface, with a nice, easy way to explain what you are doing in your calculations, or how to use the data. It is particularly useful for a collaboration with temporary members (students, short term participants). They can follow your steps and understand how to process the data with a very smooth learning curve. In addition, you shorten the path between the retrieval of data, their processing and analysis and the&nbsp;publication.</p>
+</li>
+</ul>
+<p>This is why I finally decided to give a try to the Jupyter-based solution. It opens many interesting perspective, even though some hurdles still need to be overcome. I will detail in the next post, the design choices of this solution, with a bit more emphasis on the&nbsp;code.</p>
+            </div>
+            <!-- /.entry-content -->
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+<div id="aboutme">
+    <p>
+        <strong>About destop</strong><br/>
+        Plasma physicist. Munich, Germany.
+    </p>
+</div>
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+              <ul class="list-group" id="social">
+                <li class="list-group-item"><a href="https://twitter.com/destop"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+                <li class="list-group-item"><a href="https://github.com/albanatita"><i class="fa fa-github-square fa-lg"></i> Github</a></li>
+              </ul>
+            </li>
+
+
+
+
+
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2016 destop
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="./theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="./theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="./theme/js/respond.min.js"></script>
+
+    <script src="./theme/js/bodypadding.js"></script>
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-75277621-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <!-- End Google Analytics Code -->
+
+</body>
+</html>

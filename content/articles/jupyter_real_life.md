@@ -1,4 +1,4 @@
-Title:  Jupyter in real life 1: specs
+Title:  Jupyter in real life - Part 1: specs
 Date: 2016-5-29 19:00
 Category: coding, research, python, jupyter
 Author: rdi

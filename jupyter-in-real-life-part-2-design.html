@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
+<head>
+    <title>Jupyter in real life - Part 2: design - The Far Star</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="./jupyter-in-real-life-part-2-design.html">
+
+        <meta name="author" content="rdi" />
+        <meta name="description" content="The second part on why I chose to develop a jupyter-base data processing system for our plasma testbed." />
+
+        <meta property="og:site_name" content="The Far Star" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="Jupyter in real life - Part 2: design"/>
+        <meta property="og:url" content="./jupyter-in-real-life-part-2-design.html"/>
+        <meta property="og:description" content="The second part on why I chose to develop a jupyter-base data processing system for our plasma testbed."/>
+        <meta property="article:published_time" content="2016-06-01" />
+            <meta property="article:section" content="coding, research, python, jupyter" />
+            <meta property="article:author" content="rdi" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="./theme/css/bootstrap.flatly.min.css" type="text/css"/>
+    <link href="./theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="./theme/css/pygments/native.css" rel="stylesheet">
+        <link href="./theme/css/typogrify.css" rel="stylesheet">
+    <link rel="stylesheet" href="./theme/css/style.css" type="text/css"/>
+
+
+
+
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="./" class="navbar-brand">
+The Far Star            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                         <li><a href="./pages/about.html">
+                             About
+                          </a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="./archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="./jupyter-in-real-life-part-2-design.html"
+                       rel="bookmark"
+                       title="Permalink to Jupyter in real life - Part 2: design">
+                        Jupyter in real life - Part 2:&nbsp;design
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2016-06-01T23:00:00+02:00"> Mi 01 Juni 2016</time>
+    </span>
+
+
+            <span class="label label-default">By</span>
+            <a href="./author/rdi.html"><i class="fa fa-user"></i> rdi</a>
+
+        <span class="label label-default">Category</span>
+        <a href="./category/coding-research-python-jupyter.html">coding, research, python, jupyter</a>
+
+
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>I have explained in the <a href="./jupyter-in-real-life-part-1-specs.html">first part</a> the reason why I chose a Jupyter-based system; in few words: maintenance, human/data interface, python. I will now give some details on the design of the application. A prototype can be find in my <a href="https://github.com/albanatita">github</a> but be careful: this is still a proof-of-concept, yet a working one, that I and my teammates are using (and debugging) but still in an early stage without the polished completeness of a production-graded application. Therefore, my  purpose is not here to &#8220;sell&#8221; a product that can be downloaded for immediate use but to explain the method and, maybe, encourage others to develop their own&nbsp;application.</p>
+<p>The application, which is officially called Gilgamesh, is made of three&nbsp;components:</p>
+<h2><a href="https://github.com/albanatita/GilgameshServer">Gilgamesh&nbsp;Server</a></h2>
+<p>It is a personal  version of <a href="https://github.com/jupyterhub/jupyterhub">Jupyter Hub</a>, which basically enables to use Jupyter in the cloud: you connect to a login page with the webbrowser and you can start a personal instance of Jupyter with the dashboard as a front page. I say that this version is personal because I have rewritten the code almost from scratch using only the main mechanism (reversed-proxy/spawner) and leaving aside all what makes Jupyter Hub battle-hardened. The reason was twofold: I needed to use Jupyter Hub with Windows (and the standard version cannot because of the way process IDs are managed by Windows) and, above all, I wanted to understand how it worked. I didn&#8217;t recode all the safety systems because I didn&#8217;t need them for the proof of concept: if one process idles, I can reboot the Hub: the number of users is limited (ten) and won&#8217;t be disturbed too much by few seconds of waiting. Another reason why it is personal is that I have added some services to the Hub. Actually, you can easily add services to Jupyter Hub by using &#8220;hooks&#8221;, which are kind of access ports for external codes. But when I started, the mechanism was not clear for me and it was easier to add the services directly in the Tornado code. The main service that I have added is a centrale repository where users can push and pull their notebooks from and to their account. This is easily done because I use for storing the notebooks, not the local filesystem but a PostGreSQL database using the <a href="https://github.com/quantopian/pgcontents">PGContents</a> extension from Quantopian. The other service is the bibliography: there is a bibtex file with all useful articles, books and other documents which can be displayed in a <span class="caps">HTML</span> page (with the <a href="https://bibtexparser.readthedocs.io/en/v0.6.2/">BibtexParser</a> module and the <span class="caps">JINJA2</span> template) and which can be referenced in a notebook with a small javascript extension that I have added and that converts every <code>\citep[xxxx2016]</code> in a hyperlink to the content of the corresponding document (a la&nbsp;Latex).</p>
+<p><img alt="Jupyter Dashboard Extension" src="./images/sshot_gil1_1.png" /> </p>
+<h2><a href="https://github.com/albanatita/Gilgamesh">Gilgamesh</a></h2>
+<p>It is the Python Library that provides access to the data and to the physics models. This part is deeply dependent on the structure of the diagnostics that we have, which makes it not easily exportable for other projects in the present configuration. Yet there are several patterns that can easily be generalized. My present work is to separate this general logic from the details of the implementation of our diagnostics. The objective of the library is to give the user a high-level access to the data, without thinking of how the data are hard-wired to the captor and to give him the power of data processing libraries like pandas, <a href="http://scikit-learn.org/stable/">sk-learn</a> and friends. One difficulty with the high level access is to provide a seamless interface to data which are permanently changing from experiment to experiment: diagnostics can be changed, recalibrated, disconnected, reconnected, new components can be added to the testbed, and so on. It is painful for the user to keep track of all changes, especially if you are not on location. So, the idea is that the library take cares of all the details: if the user wants the current signal from the Langmuir probe, he just has to type &#8216;Langmuir_I&#8217; and he will get it: the library would have found for the request experiment on which port it was connected and which calibration was applied to the raw signal. This is one step to the high level approach and it is related to the &#8216;Signal&#8217; approach: you call a signal by its name and than you plot it, you check its quality, your process it. Another approach, which is complementary, is to make the signals aware of their environment; it is the &#8216;Machine&#8217; approach. The tesbed and its components, especially the diagnostics are modelled in Python by classes (in a tree-like hierarchy). A given diagnostic has its own class with its name, its properties (position, surface,&#8230;), its collection of signals and its methods which represent its internal physics model. Let&#8217;s take an example with again a Langmuir probe: instead of calling the signal &#8216;Langmuir_I&#8217; and the signal &#8216;Langmuir_V&#8217; and process them to extract the density, you just call the method Langmuir.density() and the object will do all the hard work for you. So the library makes it possible for the user to choose between the &#8216;signal&#8217; approach for basic processing of data and the &#8216;machine&#8217; approach to activate the heavy physics machinery to interpret at a higher level these&nbsp;data.</p>
+<h2><a href="https://github.com/albanatita/GilgameshManager">Gilgamesh&nbsp;Manager</a></h2>
+<p>This is the more classical part: a standalone, <span class="caps">GUI</span>-based application to manage the data. I added it as a safety net: I was not sure at the beginning how easy it would be to use the notebooks to manage the data. So I used Qt-Designer to develop this graphical layer to the Gilgamesh Library. I am not sure that I will keep this component in the future. The development of the <a href="https://github.com/ipython/ipywidgets">ipywidgets</a> is fast and makes it possible to develop some advanced interactive tools directly in the notebook. If you combine that with the <a href="https://github.com/jupyter-incubator/dashboards">Dashboards extension</a>, you practically get the equivalent of a native application in the browser. <span class="caps">OK</span>, I exaggerate a bit, because it is not yet as fast and the interactive manipulation of data (like with <a href="http://www.pyqtgraph.org/">pyqtgraph</a> that I use in the Manager) is not as efficient but these tools are progressing quickly and I can see a total replacement in the near future. But even now, I have a notebook &#8220;Dashboard&#8221; that displays the overview of the results of the last discharge on the big screen of the control room and it is, I must say,&nbsp;convincing.</p>
+<p><img alt="Jupyter Dashboard Extension" src="./images/dashboard.jpg" /> </p>
+<p>This is it: the tour of the design choices for this Jupyter-based data processing system comes to the end. Next time, I will give some return on experience on the development and operation of it. After that, we will have a look at some examples of each&nbsp;component.</p>
+            </div>
+            <!-- /.entry-content -->
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+<div id="aboutme">
+    <p>
+        <strong>About destop</strong><br/>
+        Plasma physicist. Munich, Germany.
+    </p>
+</div>
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+              <ul class="list-group" id="social">
+                <li class="list-group-item"><a href="https://twitter.com/destop"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+                <li class="list-group-item"><a href="https://github.com/albanatita"><i class="fa fa-github-square fa-lg"></i> Github</a></li>
+              </ul>
+            </li>
+
+
+
+
+
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2016 destop
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="./theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="./theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="./theme/js/respond.min.js"></script>
+
+    <script src="./theme/js/bodypadding.js"></script>
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-75277621-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <!-- End Google Analytics Code -->
+
+</body>
+</html>

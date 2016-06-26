@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns# fb: https://www.facebook.com/2008/fbml">
+<head>
+    <title>Jupyter in real life - Part 3: return on experience - The Far Star</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="./jupyter-in-real-life-part-3-return-on-experience.html">
+
+        <meta name="author" content="rdi" />
+        <meta name="description" content="Where we present the experience we had installing and using our self-made Jupyter-based data processing platform. We talk about HDF5, Pandas and user training." />
+
+        <meta property="og:site_name" content="The Far Star" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="Jupyter in real life - Part 3: return on experience"/>
+        <meta property="og:url" content="./jupyter-in-real-life-part-3-return-on-experience.html"/>
+        <meta property="og:description" content="Where we present the experience we had installing and using our self-made Jupyter-based data processing platform. We talk about HDF5, Pandas and user training."/>
+        <meta property="article:published_time" content="2016-06-26" />
+            <meta property="article:section" content="coding, research, python, jupyter" />
+            <meta property="article:author" content="rdi" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="./theme/css/bootstrap.flatly.min.css" type="text/css"/>
+    <link href="./theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="./theme/css/pygments/native.css" rel="stylesheet">
+        <link href="./theme/css/typogrify.css" rel="stylesheet">
+    <link rel="stylesheet" href="./theme/css/style.css" type="text/css"/>
+
+
+
+
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="./" class="navbar-brand">
+The Far Star            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                         <li><a href="./pages/about.html">
+                             About
+                          </a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="./archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="./jupyter-in-real-life-part-3-return-on-experience.html"
+                       rel="bookmark"
+                       title="Permalink to Jupyter in real life - Part 3: return on experience">
+                        Jupyter in real life - Part 3: return on&nbsp;experience
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2016-06-26T23:50:00+02:00"> So 26 Juni 2016</time>
+    </span>
+
+
+            <span class="label label-default">By</span>
+            <a href="./author/rdi.html"><i class="fa fa-user"></i> rdi</a>
+
+        <span class="label label-default">Category</span>
+        <a href="./category/coding-research-python-jupyter.html">coding, research, python, jupyter</a>
+
+
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>I have presented in the [previous part] ({filename}jupyter_real_life_part2.md) the design of our data processing platform. The launch of the application was progressive with at the beginning only two beta testers; now I have eight regular users and I plan a maximum of 15 participants (please remember that the platform was initially designed for a small team). So I have now a bit of experience with running a multi-users Jupyter system and learnt of the advantages and issues related to the method. This is what I want to present&nbsp;now.</p>
+<h2>Technical&nbsp;choices</h2>
+<p>I am still hesitating about two choices I have made for the processing library: <span class="caps">HDF5</span> (via <a href="www.h5py.org">h5py</a>) and <a href="pandas.pydata.org/">Pandas</a>. I am not sure if they bring more advantages or more&nbsp;drawbacks. </p>
+<ul>
+<li>
+<p>For H5py (but it is basically the same for <a href="www.pytables.org/">PyTables</a>): it provides a clean <span class="caps">API</span> to save in a hierarchical way your <em>raw</em> data. Your data come from the diagnostics and you can put in nicely prepared groups, subgroups and  metadata. As far as I understand, <span class="caps">HDF5</span> is supposed to deal with huge files: you are supposed to put all your experimental data in the same file; it is conceived as a replacement of the traditional directory tree of your filesystem. I didn&#8217;t do that because my natural instinct fears big files and what happens to them if they get corrupted. And some of them have already been corrupted: [so it happens] (http://cyrille.rossant.net/moving-away-hdf5/). By writing a file for each experiment,  I lose the advantage of manipulating in one block the metadata of each experiment. Let&#8217;s say that I want to compare the maximum magnetic field from experiment to experiment; I have to open each file, read the magnetic field, close the file, open the next one and so on. With one single file, I would have simply iterated on all groups. To circumvent this problem, I have established a parallel database that gathers all metadata. It is far from being the ideal solution; when I change metadata, I need to do the writing operation in double: once in the hdf5 file and once in the database. Another issue with hdf5 is that it is ideal for frozen data structure: you get raw data and you &#8220;freeze&#8221; them in a hdf5 file. But as soon as you want to modify these data (for example, you want to add level-1 processed data), it becomes to be unclean. And to finish, the <span class="caps">API</span> is not suited for concurrent writing: I need to impose one administrator who is the only one allowed to write in it. <span class="caps">OK</span>, again, for raw data it is not a problem, but as soon as you want people to add processed data to these files, it becomes just painful. I have no ideal solution to these issues. Looking around, the general solution is based on the standard filesystem. I am still not sure this is the right way either, especially to manage metadata associated with each&nbsp;signal.</p>
+</li>
+<li>
+<p>For Pandas, I am also in doubt. It is really powerful to aggregate data (you need one single line to get the average and standard deviation or other attributes of a time series and display it for several experiments). But there are many cases where you have to reverse to numpy arrays and it adds long expressions in your python code. Moreover, access to a single point in a dataframe also requires a circonvoluted&nbsp;style.</p>
+</li>
+</ul>
+<p>There is also a more fundamental point: how to manage the <span class="caps">API</span>. I took the obvious solution to put the <span class="caps">API</span> (all the functions specific to our experiments like plasma models) on the server where the IPython kernels are running. So each kernel has access to this <span class="caps">API</span>. Main advantages: it is centralized and all changes are reflected to the users immediately; you know that these users all have the same models and the same functions. But the solution comes also with drawbacks: this is research: the models evolve quickly: the underlying functions have to follow these changes. But an <span class="caps">API</span> has to be stable, otherwise it is not usable. How do you sole these opposite constraints? I have no clear-cut answer: sometimes I have to change the functions and the associated parameters and it breaks the existing notebooks. Sometimes, I create new functions. But it is not very clean. In addition, the access to the content of the <span class="caps">API</span>, the source code is not easy; you can use a magic command to do that, but it doesn&#8217;T give you a very nice display. A more beautiful idea, which I am implementing, is to use the notebooks as the support for the APIs. Basically, you write all your APIs functions in a set of notebooks (with the great advantage that you add text and pictures or whatever necessary to explain your code and your models) and you put these notebooks in the central repository. Now you can create a notebook, and instead of loading a python code with the import, you load the <span class="caps">API</span> notebooks like a module. You can even affect version numbers to the <span class="caps">API</span> notebooks, so that you can keep the compatibility when your <span class="caps">API</span> is evolving: you just have to call the right version of the <span class="caps">API</span>. You can also copy an <span class="caps">API</span> notebook, modify it to add some functionalities and, when these changes are validated, you can share it with others on the central repository. One step further is to use these <span class="caps">API</span> notebooks to provide web&nbsp;services.</p>
+<h2>Usability</h2>
+<p>Jupyter in teamwork is great: you write a notebook, you transfer it to your teammate, he can executes just as it is: you have the same data, the same <span class="caps">API</span>; he can exactly do what you did and correct or improve your work. The principle of narrative computing is also very helpful: you can comment, explain with images, figures, whatever you need to your team. This really improves the communication and debugging of problems in code but also in physics models. In addition, the seaborn module really brings a decisive visual gain over classical tools. There is a big way for improvement and, in my opinion, the future is really bright provided that we bring these improvements to life. I will talk about them at the end. 
+But even when the solution you propose clearly brings big advantages, it is not enough to make it available to the users without a strong advertising and a strong technical support. In all cases it requires time to impose it as the reference choice to do data processing. In the first days, the most used function was &#8216;export&#8217; which makes it possible to transfer data to other tools like matlab. Several actions are necessary to reverse the trend: to propose notebook tutorials, an in-depth documentation and in-person training. You choose first the early adopters, the users who are ready to test new products (and there are not so many of them), you run together through some examples, you make some comparison with his previous codes and progressively push him to stick with your&nbsp;solution.</p>
+<p>Other good points are the widgets and the dashboard extension: you can add an interactive part to your notebook, which simplifies like in several situation. Many widgets are available, you can adapt them to your needs or create new ones. Once you have working examples, it is rather straightforward to make a new one (it is more difficult to make a nice one! Frontend physicits are welcome). So you can publish an overview of your last experiment on the big screen with all important parameters; or you can display a list of experiments and select the one where you can get the plot of the main parameters. This is really useful. The layout possibilities are for the moment lacking a bit of flexibility; maybe I do not use it in the best way or the code is still in its infancy. But it can only become better (but [some will say] (https://www.linkedin.com/pulse/comprehensive-comparison-jupyter-vs-zeppelin-hoc-q-phan-mba-) that it will be difficult because of the old technologies used; old meaning here not [angular.js] (https://angularjs.org/)). In this sense, you can have a look at <a href="https://github.com/jupyter/jupyterlab">JupyterLab</a>, which could be the future version of Jupyter: the frontend is entirely rebuilt from scratch based on <a href="https://www.typescriptlang.org">TypeScript</a> and <a href="https://github.com/phosphorjs">PhosphorJS</a>, which gives a cleaner code, and an awesome desktop-like application <span class="caps">UI</span>.</p>
+<p>But let&#8217;s go back to the present version: at one point, you will get on your account plenty of notebooks, some in classical narrative fashion, other with the dashboard aspect. And here we reach a present limitation of Jupyter: the management of notebook in the tree dashboard is awful: you can duplicate and delete, that&#8217;s it. Normally, Jupyter notebooks are stored on the local filesystem and the user can manipulate all his data with the native file explorer. But in our case, with a database filesystem, it is not possible: Jupyter has to integrate a full-fledged file manager. JupyterLab will have it but in the meanwhile, the maintenance of proper shared set of notebooks is&nbsp;difficult.</p>
+<h2>Future&nbsp;step</h2>
+<p>I am really satisfied by the result and how Jupyter, with a central data <span class="caps">API</span>, really improves the research workflow. I see one direction of long-term improvement which can radically change the way to do experiments. For the moment, Jupyter is used only to process the data. The configuration of the experiment and the setup of the experiment is done on a dedicated software (in our case Siemens WinCC) through a graphical interface which is our interface to the hardware (a Simatic). Now imagine that you can install and develop a kernel for your signal controllers and monitors. Let&#8217;s say that you have a rack of Raspberry Pis, Arduinos, RedPitayas with one of them used as a supervisor. You can install a IPython kernel on it with an <span class="caps">API</span> which defines the hardware logic (how controllers and diagnostics are interrelated, dogwatchers, control loops and so on, with the RedPitaya you can even have a <span class="caps">FPGA</span> part for fast processing^) and offers a set of commands to access this hardware with a given configuration. This kernel can be accessed from a Jupyter with a notebook, thus offering large possibilities: the most classical one would be to write ipywidgets to get back the usual <span class="caps">GUI</span> with knobs and displays. But we can imagine more interesting solutions: instead of writing on a paper your experimental protocol and entering the corresponding program in the interface, you can create code to let the computer establish itself the experimental sequence. Let&#8217;s take a concrete example: we want to see how the plasma density is evolving in function of the operating parameters (power, magnetic field, pressure). We can define by hand the serie of tests and the way each parameter will evolve. It is not straightfoward because the effect of the operating parameters depends on how you make them evolve during the test. So, you have to check in the previous experiments how they correlate and establish which sequences are the best (ramp in power first, then ramp in magnetic field, then gas injection for instance). Now, since you have both the data, the controller and the computing power available in your notebook you can try to automate the sequence: you train your neural network on the previous sets of data to highlight the interesting patterns for your objective and then you apply this pattern to the next discharges. If you get the results you want, good; otherwise, you use these new results to improve the controller. Yes, you are in a closed loop with the computer having access both to the inputs and the outputs, the ideal case for machine learning. And experimentalists were thinking that their job would never be threaten by&nbsp;machines!</p>
+            </div>
+            <!-- /.entry-content -->
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+<div id="aboutme">
+    <p>
+        <strong>About destop</strong><br/>
+        Plasma physicist. Munich, Germany.
+    </p>
+</div>
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+            <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+              <ul class="list-group" id="social">
+                <li class="list-group-item"><a href="https://twitter.com/destop"><i class="fa fa-twitter-square fa-lg"></i> Twitter</a></li>
+                <li class="list-group-item"><a href="https://github.com/albanatita"><i class="fa fa-github-square fa-lg"></i> Github</a></li>
+              </ul>
+            </li>
+
+
+
+
+
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2016 destop
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="./theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="./theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="./theme/js/respond.min.js"></script>
+
+    <script src="./theme/js/bodypadding.js"></script>
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-75277621-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <!-- End Google Analytics Code -->
+
+</body>
+</html>
